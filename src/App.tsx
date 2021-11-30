@@ -1,26 +1,66 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route } from 'react-router-dom'
+import { Global, css } from '@emotion/react'
+import emotionNormalize from 'emotion-normalize'
+import styled from '@emotion/styled'
 
-function App() {
+import { Drawer } from './features/Drawer/Drawer'
+import { HomePage } from './pages/Home'
+import { FavoritesPage } from './pages/Favorites/Favorites'
+import { onComponentMount, useAppDispatch } from './helpers/hooks/common'
+import { FAVORITED } from './helpers/localStorageKeys'
+import { init } from './pages/Favorites/slice'
+
+const Grid = styled.div`
+  margin-left: 90px;
+  width: calc(100% - 90px);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 231px);
+  grid-template-rows: repeat(auto-fit, auto);
+  grid-auto-flow: dense;
+  grid-gap: 24px;
+  padding: 48px;
+  position: relative;
+  height: 100%;
+`
+
+const App = () => {
+  const dispath = useAppDispatch()
+  onComponentMount(() => {
+    try {
+      const localStorageData = localStorage.getItem(FAVORITED)
+
+      if (!localStorageData) {
+        return
+      }
+
+      dispath(init(JSON.parse(localStorageData)))
+    } catch (error) {}
+  })
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <>
+      <Global
+        styles={css`
+          ${emotionNormalize}
+          * {
+            box-sizing: border-box;
+            font-family: Roboto;
+          }
+
+          body {
+            background-color: #2b2b2b;
+          }
+        `}
+      />
+      <Drawer />
+      <Grid>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+        </Routes>
+      </Grid>
+    </>
+  )
 }
 
-export default App;
+export default App
